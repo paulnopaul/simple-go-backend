@@ -2,11 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 )
+
+var RequestCount = prometheus.NewCounter(prometheus.CounterOpts{
+	Name:        "total_request_count",
+})
 
 type NumberHandler struct {
 	numbers []int
@@ -52,8 +58,20 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+
+func countingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		RequestCount.Inc()
+		next.ServeHTTP(w, r)
+	})
+}
+
 func newHandler(next http.Handler) http.Handler {
-	return loggingMiddleware(next)
+	return countingMiddleware(loggingMiddleware(next))
+}
+
+func init() {
+	prometheus.MustRegister(RequestCount)
 }
 
 func main() {
@@ -63,6 +81,7 @@ func main() {
 	http.Handle("/api/number", nHandler)
 	http.Handle("/api/letter", lHandler)
 	http.Handle("/api/word", wHandler)
+	http.Handle("/metrics", promhttp.Handler())
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
