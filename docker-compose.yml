@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3"
 services:
   nginx:
     image: nginx
@@ -10,6 +10,8 @@ services:
   api1:
     build:
       context: server
+    depends_on:
+      - nginx
     ports:
       - "8090:8090"
     environment:
@@ -17,6 +19,8 @@ services:
   api2:
     build:
       context: server
+    depends_on:
+      - nginx
     ports:
       - "8091:8091"
     environment:
@@ -24,14 +28,20 @@ services:
   api3:
     build:
       context: server
+    depends_on:
+      - nginx
     ports:
       - "8092:8092"
     environment:
       - PORT=8092
   prometheus:
     image: prom/prometheus
+    #    depends_on:
+    #      - cadvisor
     depends_on:
-      - cadvisor
+      - api1
+      - api2
+      - api3
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -54,12 +64,12 @@ services:
 #      - /var/run/docker.sock:/var/run/docker.sock:rw
   grafana:
     image: grafana/grafana
+    depends_on:
+      - prometheus
     user: "1000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secure_pass
     volumes:
       - ./grafana_db:/var/lib/grafana
-    depends_on:
-      - prometheus
     ports:
-      - '3000:3000'
+      - "3000:3000"
