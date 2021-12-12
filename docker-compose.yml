@@ -1,17 +1,8 @@
 version: "3"
 services:
-  nginx:
-    image: nginx
-    volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "8080:8080"
-      - "80:80"
   api1:
     build:
       context: server
-    depends_on:
-      - nginx
     ports:
       - "8090:8090"
     environment:
@@ -19,8 +10,6 @@ services:
   api2:
     build:
       context: server
-    depends_on:
-      - nginx
     ports:
       - "8091:8091"
     environment:
@@ -28,12 +17,21 @@ services:
   api3:
     build:
       context: server
-    depends_on:
-      - nginx
     ports:
       - "8092:8092"
     environment:
       - PORT=8092
+  nginx:
+    image: nginx
+    depends_on:
+      - api1
+      - api2
+      - api3
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:8080"
+      - "80:80"
   prometheus:
     image: prom/prometheus
     #    depends_on:
