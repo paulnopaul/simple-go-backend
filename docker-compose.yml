@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  api1:
+    build: ./docker/api/api.Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+  api2:
+    build: ./docker/api/api.Dockerfile
+    ports:
+      - "8091:8091"
+    environment:
+      - PORT=8091
+  api3:
+    build: ./docker/api/api.Dockerfile
+    ports:
+      - "8092:8092"
+    environment:
+      - PORT=8091
