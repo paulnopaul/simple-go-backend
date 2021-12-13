@@ -64,7 +64,7 @@ services:
     image: grafana/grafana
     depends_on:
       - prometheus
-    user: "1000"
+    user: "0"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=secure_pass
     volumes:
